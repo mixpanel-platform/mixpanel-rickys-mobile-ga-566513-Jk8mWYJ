@@ -35,11 +35,12 @@
 
     <div id="table"></div>
     <script>
-      MP.api.ready
-      var first_char = MP.api.events('Game Played'), {
-        from: moment().subtract(1, 'months'),
-        unit: 'day'
-      }
+      MP.api.ready(function(){
+        var first_char = MP.api.events('Game Played'), {
+          from: moment().subtract(1, 'months'),
+          unit: 'day'
+        }
+      });
       
       MP.api.ready(function() {
         var eventSelect = $('#eventSelect').MPEventSelect();
