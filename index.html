@@ -17,11 +17,23 @@
     <div id="table"></div>
     <script>
       MP.api.ready(function(){
-        var first_char = MP.api.events('Game Played'), {
+        var first_chart = MP.api.events('Game Played', {
           from: moment().subtract(1, 'months'),
           unit: 'day'
-        }
+        });
       });
-    </script>
+      
+      $.when(first_chart).done(function(first_chart){
+        var drawGraph = function(firstChartData){
+          console.log(firstChartData)
+          $('<div class="first"></div>').css({'width':'460px', 'float':'left'}).appendTo('body').MPChart({
+            chartType: 'line',
+            data: firstChartData
+          });
+        }
+        
+        drawGraph(first_chart.values())
+      })
+      </script>
   </body>
 </html>
