@@ -17,7 +17,7 @@
     <div id="table"></div>
     <script>
       MP.api.ready(function(){
-        MP.api.query('/api/2.0/engage/', {where : "First Name = Ricky"}, {dataType: 'json'})
+        MP.api.query('/api/2.0/engage/',{where : '("ricky" in properties["$first_name"] and "hayes" in properties["$last_name"])'})
     .done(function(json) {
         console.log('got json\n', json);
     })
