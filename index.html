@@ -17,6 +17,11 @@
     <div id="table"></div>
     <script>
       MP.api.ready(function(){
+        MP.api.query('/api/2.0/engage/', {'First Name': 'Ricky', 'Last Name': 'Hayes'}, {dataType: 'json'})
+    .done(function(json) {
+        console.log('got json\n', json);
+    })
+        
         var first_chart = MP.api.events('Game Played', {
           from: moment().subtract(1, 'months'),
           unit: 'day'
