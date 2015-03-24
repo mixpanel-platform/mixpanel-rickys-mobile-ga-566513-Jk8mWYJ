@@ -20,7 +20,7 @@
 
       .link {
         fill: none;
-        stroke: #bdc3c7;
+        stroke: steelblue;
         stroke-linecap: round;
       }
     </style>
@@ -43,6 +43,7 @@
               .attr("transform", "translate(40,0)");
 
           function addNode(data){
+            console.log(data)
             var nodes = cluster.nodes(data),
                 links = cluster.links(nodes);
 
@@ -51,7 +52,7 @@
             var link = allLinks.enter().append("path")
                 .attr("class", "link")
                 .style('stroke-width', function(d) {
-                  return ( 50 / d['target']['depth'] * d['target']['width'] );
+                  return ( d['target']['width'] );
                 });
 
             allLinks.transition().duration(1000).attr("d", diagonal);
@@ -63,11 +64,11 @@
                 .style('cursor','pointer')
                 .style('z-index', 10)
                 .on('click', function(val){
-                    if (val.id in ids) {
+                    if (ids.has(val.id)) {
                       alert("Sorry!  You've already clicked this node!");
                     } else {
                       nodeQuery(objs, val);
-                      ids.push(val['id'])
+                      ids.add(val['id'])
                     }
                 })
 
@@ -88,17 +89,17 @@
           var graphData = {
             'name':rootEvent,
             'id': 1,
-            'width': 1
+            'width': 50
           };
 
           addNode(graphData);
 
           /* Top Event Queries   */
-          var topEventsParams = {'limit':'30'};
+          var topEventsParams = {'limit':'10'};
           var topEvents = MP.api.topEvents(topEventsParams);
           /* Global Event List */
           var objs = {};
-          var ids = [];
+          var ids = new Set();
           var globalEvents = [];
 
           function randomNum() {
@@ -120,7 +121,7 @@
 
               _.each(_.keys(event_list), function(key) {
                   var event = event_list[key];
-                  if (event != rootEvent) {
+                  if (event != node.name) {
                       /* Build a list of promises */
                       promises.push(MP.api.funnel(node.name, event));
                   }
@@ -138,15 +139,16 @@
                  _.each(_.keys(nodes), function(key){
                    /* Find the ID of the element that we care about -- Add this logic in */
                     var rando = randomNum();
-                    var width = nodes[key] / total;
-                    console.log(key, width)
-                    if (width < .02 ) { return }; 
+                    /* Percent of users that traveled this node */
+                    var percent = nodes[key] / total;
+                    var width = (node['width'] * percent)
+                      /* Next Node if not enough users on this flow */
+                    if (width < .1) { return }; 
                     if (node.children) {
                         node.children.push({'name':key, 'width': width, 'id':rando});
                     } else {
                         node.children = [{'name':key, 'width': width, 'id':rando}];
                     }
-
                  })
                  addNode(graphData);
 
