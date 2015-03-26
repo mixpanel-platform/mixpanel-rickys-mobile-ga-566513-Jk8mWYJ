@@ -29,7 +29,7 @@
     <script>
       MP.api.ready(function() {
           var width = 960;
-          var height = 750;
+          var height = 800;
           var cluster = d3.layout.cluster()
             .size([height, width - 160])
 
@@ -43,14 +43,18 @@
               .attr("transform", "translate(40,0)");
 
           function addNode(data){
-            console.log(data)
+
+            d3.selectAll(".text").remove();
+            d3.selectAll(".node").remove();
+            d3.selectAll(".link").remove();
             var nodes = cluster.nodes(data),
                 links = cluster.links(nodes);
-
+            nodes.forEach(function(d) { d.y = d.depth * 100; }) 
 
             var allLinks = svg.selectAll(".link").data(links);
             var link = allLinks.enter().append("path")
                 .attr("class", "link")
+                .attr('z-index', 5)
                 .style('stroke-width', function(d) {
                   return ( d['target']['width'] );
                 });
@@ -63,24 +67,39 @@
                 .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
                 .style('cursor','pointer')
                 .style('z-index', 10)
+                .style('opacity', 0.6)
+                .on('mouseover', function(d){
+                    console.log(d)
+                    d3.select(this).style('opacity', 1.0)
+                    d3.select("text").style('opacity', 1.0);
+                })
+                .on('mouseout', function(d){
+                  d3.select(this).style('opacity', 0.6)
+                  //d3.select("text").style('opacity', 0.4);
+                })
                 .on('click', function(val){
+
                     if (ids.has(val.id)) {
                       alert("Sorry!  You've already clicked this node!");
                     } else {
                       nodeQuery(objs, val);
-                      ids.add(val['id'])
+                      ids.add(val.id)
                     }
                 })
+            node.append('svg:title')
+              .text(function(d) { return 'Count: ' + String(d.count); });
 
             allNodes.transition().duration(1000).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
             node.append("circle")
-              .attr("r", 4.5)
+                .attr("r", 4.5)
 
             node.append("text")
-                .attr("y", function(d) { return d.children ? -18 : 18; })
-                .attr("dy", 3)
-                .style("text-anchor", "middle")
+                .attr("x", function(d) { return d.children ? -18 : 18; })
+                .attr("y", function(d) { return d.children ? 18 : 0; })
                 .text(function(d) { return d.name; });
+                /*.style("text-anchor", function(d) {
+                  return d.children || d._children ? "end" : "middle"
+                })*/
           }
 
           /* Tip of the Spear */
@@ -92,10 +111,20 @@
             'width': 50
           };
 
-          addNode(graphData);
+          /* Find the Root Event Count */
+          var rootEventCount = MP.api.funnel(rootEvent, rootEvent);
+
+
+          $.when(rootEventCount).done(function(eventCount){
+              eventTotal = 0;
+              _.each(_.values(eventCount[0]), function(count){ eventTotal += count['count']});
+              graphData['count'] = eventTotal;
+              addNode(graphData);
+          });
+
 
           /* Top Event Queries   */
-          var topEventsParams = {'limit':'10'};
+          var topEventsParams = {'limit':'30'};
           var topEvents = MP.api.topEvents(topEventsParams);
           /* Global Event List */
           var objs = {};
@@ -121,17 +150,36 @@
 
               _.each(_.keys(event_list), function(key) {
                   var event = event_list[key];
+                  var parent;
+                  var events = [];
+
                   if (event != node.name) {
                       /* Build a list of promises */
-                      promises.push(MP.api.funnel(node.name, event));
+                      events.push(event);
+                      events.push(node.name);
+                      if (node.name != rootEvent){
+                        parent = node.parent;
+                        while (parent.name !=  rootEvent){
+                            events.push(parent.name);
+                            parent = parent.parent;
+                        }
+                        events.push(rootEvent);
+                        events.reverse();
+                        promises.push(MP.api.funnel.apply(MP.api, events));
+
+                      } else {
+                        promises.push(MP.api.funnel(node.name, event));
+                      }
                   }
               });
 
               Promise.all(promises).then(function(promiseArray){
                 _.each(promiseArray, function(data){
+                    console.log(data);
                     total = 0;
-                    _.each(_.values(data[1]), function(funnelObj){ total += funnelObj['count']});
-                    nodes[_.values(data[1])[0]['event']] = total;
+                    var length = data.length - 1;
+                    _.each(_.values(data[length]), function(funnelObj){ total += funnelObj['count']});
+                    nodes[_.values(data[length])[0]['event']] = total;
                 });
               }).then(function(){
                  /* Add Data to Graph Data */
@@ -139,19 +187,16 @@
                  _.each(_.keys(nodes), function(key){
                    /* Find the ID of the element that we care about -- Add this logic in */
                     var rando = randomNum();
-                    /* Percent of users that traveled this node */
                     var percent = nodes[key] / total;
-                    var width = (node['width'] * percent)
-                      /* Next Node if not enough users on this flow */
-                    if (width < .1) { return }; 
+                    var width = ( node['width'] * percent )
+                    if (width < .02 ) { return };
                     if (node.children) {
-                        node.children.push({'name':key, 'width': width, 'id':rando});
+                        node.children.push({'name':key, 'id':rando, 'width': width, 'count':nodes[key]});
                     } else {
-                        node.children = [{'name':key, 'width': width, 'id':rando}];
+                        node.children = [{'name':key, 'id':rando, 'width': width, 'count':nodes[key]}];
                     }
                  })
                  addNode(graphData);
-
               });
           }
       });
