@@ -32,8 +32,6 @@
           var height = 750;
           var cluster = d3.layout.cluster()
             .size([height, width - 160])
-            //.nodeSize([15, 5])
-
           var diagonal = d3.svg.diagonal()
               .projection(function(d) { return [d.y, d.x]; });
 
@@ -91,11 +89,8 @@
                 var parent = 'Conversion From Parent Event: ' + String(d.conversion) + '%\n';
                 var root = 'Conversion From Root Event: ' + String(d.root) + '%'; 
                 return count, parent, root });
-
-
-            allNodes.transition().duration(1000).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
             node.append("circle")
-                .attr("r", 4.5)
+                .attr("r", 4.5);
 
             node.append("text")
                 .attr("dx", function(d) { return d.children ? 0 : 8; })
@@ -121,7 +116,7 @@
 
 
           $.when(rootEventCount).done(function(eventCount){
-              eventTotal = 0;
+              var eventTotal = 0;
               _.each(_.values(eventCount[0]), function(count){ eventTotal += count.count});
               graphData.count = eventTotal;
               addNode(graphData);
@@ -141,8 +136,8 @@
 
           /* Funnel Queries */
           $.when(topEvents).done(function(events){
-                /* Cache top events */
-                objs = events.values();
+              /* Cache top events */
+              objs = events.values();
           });
 
           /* Let the Funnel Queries Begin... */
@@ -179,7 +174,7 @@
                 _.each(promiseArray, function(data){
                     total = 0;
                     var length = data.length - 1;
-                    _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count});
+                    _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count });
                     nodes[_.values(data[length])[0].event] = total;
                 });
               }).then(function(){
