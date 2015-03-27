@@ -70,7 +70,6 @@
                 .style('cursor','pointer')
                 .style('opacity', 0.6)
                 .on('mouseover', function(d){
-                    console.log(d)
                     d3.select(this).style('opacity', 1.0)
                     d3.select("text").style('opacity', 1.0);
                 })
@@ -98,7 +97,7 @@
                 .attr("dx", function(d) { return d.children ? 0 : 8; })
                 .attr("dy", function(d) { return d.children ? 18 : 3; })
                 .text(function(d) { return d.name; })
-                .attr("text-anchor", function(d){ 
+                .attr("text-anchor", function(d){
                   return ( d.children ? "middle" : undefined );
                 });
           }
@@ -137,6 +136,7 @@
           function randomNum() {
               return _.random(0, 10000000);
           }
+
           /* Funnel Queries */
           $.when(topEvents).done(function(events){
                 objs = events.values();
@@ -155,17 +155,17 @@
                   var event = event_list[key];
                   var parent;
                   var events = [];
-
                   if (event != node.name) {
                       /* Build a list of promises */
                       events.push(event);
                       events.push(node.name);
                       if (node.id != graphData.id){
                         parent = node.parent;
-                        while (parent.name !=  rootEvent){
+                        while (parent.id !=  graphData.id){
                             events.push(parent.name);
                             parent = parent.parent;
                         }
+
                         events.push(rootEvent);
                         events.reverse();
                         promises.push(MP.api.funnel.apply(MP.api, events));
@@ -178,7 +178,6 @@
 
               Promise.all(promises).then(function(promiseArray){
                 _.each(promiseArray, function(data){
-                    console.log(data);
                     total = 0;
                     var length = data.length - 1;
                     _.each(_.values(data[length]), function(funnelObj){ total += funnelObj['count']});
@@ -195,18 +194,18 @@
                     if (conversion < 2 ) { return };
                     if (node.children) {
                         node.children.push({
-                          'name':key, 
-                          'id':rando, 
-                          'root': root, 
-                          'conversion': conversion, 
+                          'name':key,
+                          'id':rando,
+                          'root': root,
+                          'conversion': conversion,
                           'count':nodes[key]
                         });
                     } else {
                         node.children = [{
-                          'name':key, 
-                          'id':rando, 
-                          'root': root, 
-                          'conversion': conversion, 
+                          'name':key,
+                          'id':rando,
+                          'root': root,
+                          'conversion': conversion,
                           'count':nodes[key]
                         }];
                     }
