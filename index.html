@@ -58,7 +58,7 @@
             var link = allLinks.enter().append("path")
                 .attr("class", "link")
                 .style('stroke-width', function(d) {
-                  return ( d['target']['width'] );
+                  return ( d.target.root * .2 );
                 });
 
             allLinks.transition().duration(1000).attr("d", diagonal);
