@@ -179,13 +179,17 @@
                     total = 0;
                     var length = data.length - 1;
                     _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count});
-                    nodes[_.values(data[length])[0].event = total;
+                    nodes[_.values(data[length])[0].event] = total;
                 });
               }).then(function(){
                  /* Add Data to Graph Data */
                  var total = _.values(nodes).reduce(function(a , b){return a + b;});
+                 
                  _.each(_.keys(nodes), function(key){
-                   /* Find the ID of the element that we care about -- Add this logic in */
+                   /* 
+                      Build a node object with the conversion percentage and other meta data and add it to the children
+                      of the parent node
+                   */
                     var rando = randomNum();
                     var conversion = Math.floor(nodes[key] / node.count * 100);
                     var root = Math.floor(nodes[key] / graphData.count * 100);
