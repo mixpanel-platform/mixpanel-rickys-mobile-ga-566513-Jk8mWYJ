@@ -84,13 +84,14 @@
                       ids.add(val.id)
                     }
                 })
-
+ 
             node.append('svg:title')
               .text(function(d) { 
-                return 'Count: ' + String(d.count) + 
-                  '\nConversion From Parent Event: ' + String(d.conversion) + '%' + 
-                  '\nConversion From Root Event: ' + String(d.root + '%'); 
-              });
+                var count = 'Count: ' + String(d.count) + '\n';
+                var parent = 'Conversion From Parent Event: ' + String(d.conversion) + '%i\n';
+                var root = 'Conversion From Root Event: ' + String(d.root) + '%'; 
+                return count, parent, root });
+
 
             allNodes.transition().duration(1000).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
             node.append("circle")
