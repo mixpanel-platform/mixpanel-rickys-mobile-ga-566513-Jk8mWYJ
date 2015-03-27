@@ -75,8 +75,13 @@
                   d3.select(this).style('opacity', 0.6)
                 })
                 .on('click', function(val){
-                    if (ids.has(val.id)) {
-                      alert("Sorry!  You've already clicked this node!");
+                    if (val.children) {
+                      val._children = val.children;
+                      val.children = null;
+                      addNode(graphData)
+                    } else if (val._children) {
+                      val.children = val._children;
+                      addNode(graphData);
                     } else {
                       nodeQuery(objs, val);
                       ids.add(val.id)
