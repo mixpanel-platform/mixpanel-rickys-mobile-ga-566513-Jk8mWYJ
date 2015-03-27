@@ -77,7 +77,6 @@
                   d3.select(this).style('opacity', 0.6)
                 })
                 .on('click', function(val){
-
                     if (ids.has(val.id)) {
                       alert("Sorry!  You've already clicked this node!");
                     } else {
@@ -106,9 +105,9 @@
                 });
           }
 
-          /* Tip of the Spear */
+          /* This Event Represents the Origin of the User Flow Diagram. */
           var rootEvent = 'App Open';
-          /* Graph Root Event */
+          
           var graphData = {
             'name':rootEvent,
             'id': 1,
@@ -122,8 +121,8 @@
 
           $.when(rootEventCount).done(function(eventCount){
               eventTotal = 0;
-              _.each(_.values(eventCount[0]), function(count){ eventTotal += count['count']});
-              graphData['count'] = eventTotal;
+              _.each(_.values(eventCount[0]), function(count){ eventTotal += count.count});
+              graphData.count = eventTotal;
               addNode(graphData);
           });
 
@@ -134,7 +133,6 @@
           /* Global Event List */
           var objs = {};
           var ids = new Set();
-          var globalEvents = [];
 
           function randomNum() {
               return _.random(0, 10000000);
@@ -142,9 +140,8 @@
 
           /* Funnel Queries */
           $.when(topEvents).done(function(events){
+                /* Cache top events */
                 objs = events.values();
-                /* Store top events */
-                _.each(_.keys(objs), function(key){globalEvents.push(key)});
           });
 
           /* Let the Funnel Queries Begin... */
@@ -162,17 +159,15 @@
                       /* Build a list of promises */
                       events.push(event);
                       events.push(node.name);
-                      if (node.id != graphData.id){
+                      if (node.id != graphData.id){  // If this isn't our root event
                         parent = node.parent;
                         while (parent.id !=  graphData.id){
                             events.push(parent.name);
                             parent = parent.parent;
                         }
-
                         events.push(rootEvent);
                         events.reverse();
                         promises.push(MP.api.funnel.apply(MP.api, events));
-
                       } else {
                         promises.push(MP.api.funnel(node.name, event));
                       }
@@ -183,8 +178,8 @@
                 _.each(promiseArray, function(data){
                     total = 0;
                     var length = data.length - 1;
-                    _.each(_.values(data[length]), function(funnelObj){ total += funnelObj['count']});
-                    nodes[_.values(data[length])[0]['event']] = total;
+                    _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count});
+                    nodes[_.values(data[length])[0].event = total;
                 });
               }).then(function(){
                  /* Add Data to Graph Data */
