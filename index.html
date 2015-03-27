@@ -87,7 +87,11 @@
                 })
 
             node.append('svg:title')
-              .text(function(d) { return 'Count: ' + String(d.count) + '\nConversion From Parent Event: ' + String(d.conversion) + '%' + '\nConversion From Root Event: ' + String(d.root + '%'); });
+              .text(function(d) { 
+                return 'Count: ' + String(d.count) + 
+                  '\nConversion From Parent Event: ' + String(d.conversion) + '%' + 
+                  '\nConversion From Root Event: ' + String(d.root + '%'); 
+              });
 
             allNodes.transition().duration(1000).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
             node.append("circle")
@@ -101,6 +105,8 @@
                   return ( d.children ? "middle" : undefined );
                 });
           }
+          d3.select(self.frameElement).style("height", height + "px");
+
           /* Tip of the Spear */
           var rootEvent = 'App Open';
           /* Graph Root Event */
