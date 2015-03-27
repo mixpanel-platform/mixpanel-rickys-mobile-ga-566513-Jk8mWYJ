@@ -76,7 +76,6 @@
                 })
                 .on('mouseout', function(d){
                   d3.select(this).style('opacity', 0.6)
-                  //d3.select("text").style('opacity', 0.4);
                 })
                 .on('click', function(val){
 
@@ -111,7 +110,6 @@
           var graphData = {
             'name':rootEvent,
             'id': 1,
-            'width': 50,
             'conversion': 100,
             'root' : 100
           };
@@ -162,7 +160,7 @@
                       /* Build a list of promises */
                       events.push(event);
                       events.push(node.name);
-                      if (node.name != rootEvent){
+                      if (node.id != graphData.id){
                         parent = node.parent;
                         while (parent.name !=  rootEvent){
                             events.push(parent.name);
@@ -192,15 +190,25 @@
                  _.each(_.keys(nodes), function(key){
                    /* Find the ID of the element that we care about -- Add this logic in */
                     var rando = randomNum();
-                    var percent = nodes[key] / total;
                     var conversion = Math.floor(nodes[key] / node.count * 100);
-                    var width = ( node['width'] * percent );
                     var root = Math.floor(nodes[key] / graphData.count * 100);
-                    if (width < .02 ) { return };
+                    if (conversion < 2 ) { return };
                     if (node.children) {
-                        node.children.push({'name':key, 'id':rando, 'root': root, 'conversion': conversion, 'width': width, 'count':nodes[key]});
+                        node.children.push({
+                          'name':key, 
+                          'id':rando, 
+                          'root': root, 
+                          'conversion': conversion, 
+                          'count':nodes[key]
+                        });
                     } else {
-                        node.children = [{'name':key, 'id':rando, 'root': root, 'conversion': conversion, 'width': width, 'count':nodes[key]}];
+                        node.children = [{
+                          'name':key, 
+                          'id':rando, 
+                          'root': root, 
+                          'conversion': conversion, 
+                          'count':nodes[key]
+                        }];
                     }
                  })
                  addNode(graphData);
