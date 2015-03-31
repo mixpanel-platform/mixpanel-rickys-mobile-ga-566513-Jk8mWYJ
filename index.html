@@ -93,7 +93,7 @@
                 var count = 'Count: ' + String(d.count) + '\n';
                 var parent = 'Conversion From Parent Event: ' + String(d.conversion) + '%\n';
                 var root = 'Conversion From Root Event: ' + String(d.root) + '%'; 
-                return count, parent, root });
+                return count + parent + root });
             node.append("circle")
                 .attr("r", 4.5);
 
