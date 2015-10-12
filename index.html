@@ -46,7 +46,7 @@
       <div id="eventSelect" style="float: left;"></div>
       <div id="dateSelect" style="float: right;"></div>
       <div style="clear: both;"></div>
-      <button id="run" value="Run">Run</button>
+      <button id="run" value="Run" style="display: none;">Run</button>
     <script>
       MP.api.MAX_SIMULTANEOUS_QUERIES = 30
       var datesSelector = $('#dateSelect').MPDatepicker();
@@ -209,7 +209,6 @@
                   Build a node object with the conversion percentage and other meta data and add it to the children
                   of the parent node
                */
-                debugger
                 var conversion = Math.floor(nodes[key] / node.count * 100);
                 var root = Math.floor(nodes[key] / graphData.count * 100);
                 if (conversion < 2 ) { return };
@@ -232,6 +231,9 @@
              addNode(graphData);
           });
       }
+      rootEventSelector.on('change', function(e){
+        $('#run').show();
+      })
       $('#run').on('click', function(e){
         var rootEvent = rootEventSelect.MPEventSelect('value')
         var dates = datesSelector.MPDatepicker('value')
