@@ -171,6 +171,7 @@
         });
 
           Promise.all(promises).then(function(promiseArray){
+            debugger
             _.each(promiseArray, function(data){
                 total = 0;
                 var length = data.length - 1;
