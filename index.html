@@ -166,6 +166,7 @@
           }
           events.push({'event': event});
           events.reverse();
+          console.log(events)
           events.push(params);
           promises.push(MP.api.funnel.apply(MP.api, events));
         });
