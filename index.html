@@ -173,6 +173,7 @@
 
           Promise.all(promises).then(function(promiseArray){
             _.each(promiseArray, function(data){
+                debugger
                 total = 0;
                 var length = data.length - 1;
                 _.each(_.values(data[length]), function(funnelObj){ total += funnelObj.count });
