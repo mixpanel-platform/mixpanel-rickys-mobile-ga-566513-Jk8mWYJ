@@ -43,46 +43,90 @@
     </style>
   </head>
   <body class="mixpanel-platform-body" style="overflow-x:scroll;">
-      <div id="eventSelect" style="float: left;"></div>
-      <div id="dateSelect" style="float: right;"></div>
-      <div style="clear: both;"></div>
-      <button id="run" value="Run" style="display: none;">Run</button>
+    <div id="eventSelect" style="float: left;"></div>
+    <div id="dateSelect" style="float: right;"></div>
+    <div style="clear: both;"></div>
+    <button id="run" value="Run" style="display: none;">Run</button>
     <script id='flows'>
-      function main() {
-        return Events({
-          from_date: params.from_date,
-          to_date: params.to_date,
-        })
-        .groupByUser((state, events) => {
-          state = state || {
-            events: [],
-            next: {},
-            eventStr: [],
+    /*
+      TODO: 
+      Handle duplicated events in each flow
+      Test and use the event mapping
+      Generic 'sessionization' - lower priority
+    */
+    var eventsMapping = {
+    'Page View': '$current_url'
+    }
+    
+    var defaults = {
+      from_date:"2018-02-08",
+      to_date:"2018-03-09",
+      events:["Page View"],
+      top: 8
+      }
+      
+    _.defaults(params, defaults)
+    
+    function main() {
+      return Events({
+        from_date: params.from_date,
+        to_date: params.to_date,
+      })
+      .groupByUser((state, events) => {
+        state = state || {
+          events: [],
+          next: {},
+          eventStr: [],
+        }
+        _.each(events, event => {
+          // Test for is current event, if is, push property value too
+          // What about first occurrence of event.
+          var event_name = eventMapping(event)
+          state.eventStr.push(event_name)
+          if (isStrict(state.eventStr, params.events)){
+            if(isComplete(state.eventStr, params.events)){
+              state.next[event_name] = state.next[event_name] + 1 || 1
+              state.eventStr = [event_name]
+            } 
+          } else {
+            state.eventStr = [event.name]
           }
-          _.each(events, event => {
-            state.eventStr.push(event.name)
-            if ( isStrict(state.eventStr, params.events) ){
-              if( isComplete(state.eventStr, params.events) ){
-                state.next[event.name] = state.next[event.name] + 1 || 1
-                state.eventStr = [event.name]
-              } 
-            } else {
-              state.eventStr = [event.name]
-            }
-          })
-          return state
         })
-        .map(i => i.value.next)
-        .reduce(mixpanel.reducer.object_merge())
+        return state
+      })
+      .map(i => i.value.next)
+      .reduce(mixpanel.reducer.object_merge())
+      .map(top)
+    }
+    
+    function eventMapping(event){
+      var name = event.name
+      var context = eventsMapping[name]
+      if(context !== undefined){
+        name = [name,': ', String(event.properties[context])].join('')
       }
-      
-      function isStrict(eventStream, flow){
-        return _.all(eventStream, (event, idx) => event == flow[idx] || !flow[idx] )
-      }
-      
-      function isComplete(eventStream, flow){
-        return eventStream.length > flow.length
-      }
+      return name
+    }
+    
+    function top(i){
+              var res = {}
+              var items = []
+              var tmp = []
+              _.each(i, (v,k) => items.push({k, v}))
+              tmp = _.sortBy(items, i => i.v)
+              _.each( _.last(tmp, params.top), (v) => {
+                res[v.k] = v.v
+              })
+              return res
+          }
+    
+    function isStrict(eventStream, flow){
+      return _.all(eventStream, (event, idx) => event == flow[idx] || !flow[idx] )
+    }
+    
+    function isComplete(eventStream, flow){
+      return eventStream.length > flow.length
+    }
     </script>
     <script id='events'>
       function main() {
@@ -213,7 +257,7 @@
         events.reverse();
         console.log(events)
         
-        MP.api.jql(query, _.extend(params, {events:events})).done(function(data){
+        MP.api.jql(query, _.extend(params, {events:events, top: 8, platform: 'Web'})).done(function(data){
           var nodes = data[0]
            /* Add Data to Graph Data */
           var total = _.reduce(nodes, function(a , b){return a + b;}, 0);
