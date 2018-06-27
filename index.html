@@ -148,6 +148,7 @@
       var rootEventSelect = $('#eventSelect').MPSelect();
       MP.api.jql(events, params).done(function(results){
         var rootEventSelect = $('#eventSelect').MPSelect('initEl', {items:results});
+        $('#run').show();
       })
       /* Global Event List */
       var rootEvent;
@@ -285,6 +286,7 @@
       rootEventSelect.on('change', function(e){
         $('#run').show();
       })
+      
       $('#run').on('click', function(e){
         var rootEvent = rootEventSelect.MPSelect('value')
         var dates = datesSelector.MPDatepicker('value')
